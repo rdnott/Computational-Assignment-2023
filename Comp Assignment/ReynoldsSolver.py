@@ -41,21 +41,35 @@ class ReynoldsSolver:
 ##### TO DO #####
 #################       
     def SolveReynolds(self,StateVector,time): # StateVector is both in and output
-        
-        #1. reset convergence
+        #in de statevector bevindt zich gwn alles van properties
+        #onderverdeeld in tijdsstappen
+        #statevector[time] is dus "de GRID (aangemaakt in main.py) waar alles uit gehaald
+        # kan worden voor moment time"
+        #1. reset convergence Hier gewoon een druk en temperatuursvector beginnende met stap 1
+
         epsP=np.zeros(self.MaxIter+1)
         epsP[0]=1.0
         epsT=np.zeros(self.MaxIter+1)
         epsT[0]=1.0
+
+        #!!! de grid is dus gwn het 2D veld van de ring en de cylinderwand
+        #elk punt in de grid heeft op dat moment een density en visc etc die verandert 
+        #in de tijd en elk tijdsmoment wordt er een nieuwe grid aangemaakt met aangepaste waarden
+        #dingen zoals h blijjven dus constant door de tijd maar verschillen voor elk punt in de grid
+        #daarom wordt er altijd scalar vermenigvuldiging gedaan ipv matrixvermenigvuldiging
+
         
-        
+        #de volgende variabelen worden niet geupdatet
         #2. Predefine variables outside loop for Computational Efficiency
         DensityFunc    =self.FluidModel.Density
         ViscosityFunc  =self.FluidModel.DynamicViscosity
         SpecHeatFunc   =self.FluidModel.SpecificHeatCapacity
         ConducFunc     =self.FluidModel.ThermalConductivity      
         PreviousDensity    =self.FluidModel.Density(StateVector[time-1])
-        
+        #fluidfraction??
+
+
+        #hiervoor eerst die functie finitediff doen
         DDX=self.Discretization.DDXCentral
         DDXBackward=self.Discretization.DDXBackward
         DDXForward=self.Discretization.DDXForward
@@ -66,17 +80,45 @@ class ReynoldsSolver:
         SetNeumannRight=self.Discretization.SetNeumannRight
         
         #define your own when desired
-        
-        #3. Iterate
-
         k=0
+
         while ((((epsP[k]>self.TolP)) or (epsT[k]>self.TolT)) and (k<self.MaxIter)):
         
      
             #0. Calc Properties
+            #nu op moment dat in de loop wordt gegaan is enkel T en p en de time daarvan gekend dus nu gaan we voor elke time step de eigenschappen 
+            #opnieuw bepalen
+
+            #rho enal ifv p,T die in statevector staan
+            Density = DensityFunc(StateVector[time])
+            SpecHeat = SpecHeatFunc(StateVector[time])
+            Viscosity = ViscosityFunc(StateVector[time])
+            Conduc = ConducFunc(StateVector[time])
+            h = StateVector[time].h
+
+            #statevector aanpassen
+            StateVector[time].Viscosity = Viscosity
+            StateVector[time].Density = Density
+            StateVector[time].SpecHeat = SpecHeat
+            StateVector[time].Conduc = Conduc
+
 
         
             #1. LHS Pressure
+            #Hier ga ik proberen de LHS zelf te maken
+            #eerst A
+            #density is now a "grid density"
+
+            phi = ((h**3)/(12*Viscosity))*Density
+
+            #A is a diagonal matrix such that we need to trim phi:
+            phi_diag = sparse.identity(self.Grid.Nx, dtype='float', format="csr")
+            phi_diag.data = phi
+
+            A = phi_diag @ D2DX2
+
+        #3. Iterate
+
                
         
             #2. RHS Pressure
