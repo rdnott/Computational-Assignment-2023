@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Roel Denotte
+Roel Denotte Leander
 Created on Tue Aug 25 17:37:40 2020
 @ProjectTitle : Thermal Mixed-Hydrodynamic Lubrication Solver for simulation of a compression ring - cylinder liner contact in an IC Engine.
 @author: Dieter Fauconnier
