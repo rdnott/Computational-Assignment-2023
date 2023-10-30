@@ -7,10 +7,7 @@ import scipy.sparse as sparse # Sparse Matrix Definitions and operations
 
 class FiniteDifferences:
     
-    
-#################
-##### TO DO #####
-#################
+
     def __init__(self,Grid):
         
         #Schemes for first-order (D)     i-1   i  i+1
@@ -28,7 +25,8 @@ class FiniteDifferences:
         
         # Sparse Matrix Operators
         self.Identity=sparse.identity(Grid.Nx, dtype='float', format="csr")
-        
+    
+
         # first order
         self.DDXCentral=sparse.diags(self.CentralStencilD, [-1, 0, 1], shape=(Grid.Nx, Grid.Nx), dtype='float', format="csr")
         self.DDXCentral[-1,-3:]=self.BackwardStencilD   #Define right boundary stencil
@@ -37,7 +35,7 @@ class FiniteDifferences:
         self.DDXBackward=sparse.diags(self.BackwardStencilD, [-2, -1, 0], shape=(Grid.Nx, Grid.Nx), dtype='float', format="csr" )
         self.DDXBackward[0,:3]=self.ForwardStencilD     #Define boundary stencil
 
-        self.DDXForward=sparse.diag(self.ForwardStencilD, [0, 1, 2], shape=(Grid.Nx, Grid.Nx), dtype='float', format="csr")
+        self.DDXForward=sparse.diags(self.ForwardStencilD, [0, 1, 2], shape=(Grid.Nx, Grid.Nx), dtype='float', format="csr")
         self.DDXForward[-1,-3:]=self.BackwardStencilD   #Define boundary stencil
         
         # second order
@@ -59,3 +57,4 @@ class FiniteDifferences:
     
     def SetNeumannRight(self,M):
         M.data[[-3,-2,-1]]=self.ForwardStencilD
+
