@@ -32,6 +32,11 @@ class TriboContact:
         """Wear Coefficients"""
         self.WearCoefficient_Cylinder=2.5e-10;
         self.WearCoefficient_CompressionRing=1.25e-10;
+    
+        """Geometry of the cylinder and ring"""
+        self.L = 2 * np.pi * Engine.Cylinder.Radius
+        self.b = Engine.CompressionRing.Thickness
+        self.delta = Engine.CompressionRing.CrownHeight
 
     def I2(self,l): 
         I2 = (0.5*(l**2+1)*special.erfc(l/np.sqrt(2.0)) - (l/np.sqrt(2.0*np.pi))*np.exp(-l**2.0/2.0))/np.sqrt(l)
@@ -46,16 +51,21 @@ class TriboContact:
 ##### TO DO #####
 #################
     def AsperityContact(self,StateVector,time):
-
+        lambda_c  = 2.2239
         Lambda=StateVector[time].Lambda;
-       
-        StateVector[time].AsperityArea=
-        StateVector[time].AsperityLoad=
-        StateVector[time].AsperityFriction=
-        StateVector[time].AsperityContactPressure=
-        StateVector[time].HertzianContactPressure=
+       if Lambda < lambda_c:  # contact is made
+            StateVector[time].AsperityArea= np.pi**2 * self.RoughnessParameter ** 2 * self.L * np.sqrt(self.Roughness * (self.b ** 2) * 0.25 / self.delta) * integral.quad(self.I2, Lambda, self.Lambda_c,limit=100)[0]
+            StateVector[time].AsperityLoad= 16/15 * np.sqrt(2) * np.pi * (self.RoughnessParameter ** 2) * np.sqrt(self.Roughness / self.Kappa) * self.YoungsModulus * np.sqrt(self.Roughness * (self.b ** 2)/(4* self.delta) * integral.quad(self.I52, Lambda, self.Lambda_c,limit=100)[0]
+            StateVector[time].AsperityFriction= self.Tau0 * StateVector[time].AsperityArea / self.L + self.f_b * StateVector[time].AsperityLoad
+            StateVector[time].AsperityContactPressure= StateVector[time].AsperityLoad/StateVector[time].AsperityArea
+            StateVector[time].HertzianContactPressure= (np.pi / 4) * np.sqrt((StateVector[time].AsperityLoad * self.YoungsModulus) / (np.pi * self.Engine.CompressionRing.Curvature * self.L))  # pressure = Pi/4 * p0 (1.2 slide 42) (L meegerekend)
         
-        
+        else:
+            StateVector[time].AsperityArea= 0
+            StateVector[time].AsperityLoad= 0
+            StateVector[time].AsperityFriction= 0
+            StateVector[time].AsperityContactPressure= 0
+            StateVector[time].HertzianContactPressure= 0
 #################
 ##### TO DO #####
 #################       
