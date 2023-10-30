@@ -24,6 +24,8 @@ class FiniteDifferences:
         self.ForwardStencilD=
         
         self.CentralStencilDD=
+        self.BackwardStencilDD=
+        self.ForwardStencilDD=
 
         
         # Sparse Matrix Operators
