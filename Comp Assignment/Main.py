@@ -172,25 +172,40 @@ while time<Time.nt:
     StateVector[time]=copy.deepcopy(StateVector[time-1])
     print("Time Loop:: Start Calculation @ Time:",round(Time.t[time]*1000,5),"ms \n")
     
-    
+    ## ReSet ##
+    eps_h0 = np.ones(MaxIterLoad+1)
+    k = 1
+
+    ## Guess ## #NOG EENS NA KIJKEN VOOR h0[1]
+    h0 = np.zeros(MaxIterLoad + 1) #If index error, do MaxIterLoad+2
+    h0[0] = StateVector[time-1].h0
+    h0[1] = h0[0]*1.01
+
+    Delta_Load = np.zeros(MaxIterLoad)
+    F_elas = 16*Engine.CompressionRing.FreeGapSize*Engine.Cylinder.Material.YoungsModulus*Engine.CompressionRing.Thickness*Engine.CompressionRing.Width^3/(36*np.pi*(Engine.Cylinder.Radius*2)^4)
+
     """Start Load Balance Loop"""
-    #TODO
-    while (): 
+    ### TO DO ###
+    while k<MaxIterLoad and eps_h0[k] >Tolh0: 
     
         """a. Calculate Film Thickness Profile"""
-        StateVector[time].h=
-        
+        StateVector[time].h= h0[k] + 4 * Engine.CompressionRing.CrownHeight * (Grid.x**2) / (Engine.CompressionRing.Thickness**2)
+
         """b. Calculate Asperity Load"""
-        StateVector[time].Lambda = 
+        StateVector[time].Lambda = h0[k]/Contact.Roughness
         Contact.AsperityContact(StateVector,time)
         
         """c. Solve Reynolds""" 
         Reynolds.SolveReynolds(StateVector,time)
         
         """d. Newton Raphson Iteration to find the h0"""
-         
-        """e. Update & Calculate Residual"""      
+        Delta_Load[k] = StateVector[time].HydrodynamicLoad + StateVector[time].AsperityLoad - Ops.CompressionRingLoad[time] - F_elas
+
+        h0[k +1] = max(h0[k] - UnderRelaxh0 * ((Delta_Load[k]) / (Delta_Load[k] - Delta_Load[k - 1])) * (h0[k] - h0[k - 1]), 0.1 * Contact.Roughness)
         
+        """e. Update & Calculate Residual"""      
+        k += 1
+        eps_h0[k] = abs(h0[k] / h0[k-1] - 1) 
        
         """Load Balance Output""" 
         print("Load Balance:: Residuals [h0] @Time:",round(Time.t[time]*1000,5),"ms & Iteration:",k,"-> [",np.round(epsh0[k],2+int(np.abs(np.log10(Tolh0)))),"]\n")
@@ -214,9 +229,11 @@ while time<Time.nt:
     
     
     """ Calculate Ohter Variables of Interest, e.g. COF wear"""
-    #TODO
-    StateVector[time].Hersey=
-    StateVector[time].COF=
+    ###########
+    ## TO DO ##
+    ###########
+    StateVector[time].Hersey=abs(Ops.SlidingVelocity[time]) * StateVector[time].Viscosity / StateVector[time].HydrodynamicLoad
+    StateVector[time].COF=(StateVector[time].ViscousFriction + StateVector[time].AsperityFriction) / StateVector[time].HydrodynamicLoad
     Contact.Wear(Ops,Time,StateVector,time)
  
     
