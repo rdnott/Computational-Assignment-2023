@@ -12,6 +12,8 @@ import scipy.sparse as sparse # Sparse Matrix Definitions and operations
 import scipy.sparse.linalg as linalg # Sparse Matrix Linear Algebra
 import matplotlib.pyplot as plt
 import VisualLib as vis
+from scipy.sparse.linalg import spsolve #voor snel stelsels oplossen met veel 0 elementen
+
 
 class ReynoldsSolver:
     def __init__(self,Grid,Time,Ops,FluidModel,Discretization):
@@ -65,7 +67,7 @@ class ReynoldsSolver:
         ViscosityFunc  =self.FluidModel.DynamicViscosity
         SpecHeatFunc   =self.FluidModel.SpecificHeatCapacity
         ConducFunc     =self.FluidModel.ThermalConductivity      
-        PreviousDensity    =self.FluidModel.Density(StateVector[time-1])
+        
         #fluidfraction??
 
 
@@ -81,6 +83,11 @@ class ReynoldsSolver:
         
         #define your own when desired
         k=0
+        UPLUSdt = sparse.identity(self.Grid.Nx, dtype='float', format="csr")
+        UMINdt = sparse.identity(self.Grid.Nx, dtype='float', format="csr")
+        Estart = sparse.identity(self.Grid.Nx, dtype='float', format="csr")
+        PHI = sparse.identity(self.Grid.Nx, dtype='float', format="csr")
+        DPHIDX = sparse.identity(self.Grid.Nx, dtype='float', format="csr")
 
         while ((((epsP[k]>self.TolP)) or (epsT[k]>self.TolT)) and (k<self.MaxIter)):
         
@@ -94,7 +101,7 @@ class ReynoldsSolver:
             SpecHeat = SpecHeatFunc(StateVector[time])
             Viscosity = ViscosityFunc(StateVector[time])
             Conduc = ConducFunc(StateVector[time])
-            h = StateVector[time].h
+            h = StateVector[time].h #gewoon filmthickness eruithalen
 
             #statevector aanpassen
             StateVector[time].Viscosity = Viscosity
@@ -105,50 +112,149 @@ class ReynoldsSolver:
 
         
             #1. LHS Pressure
-            #Hier ga ik proberen de LHS zelf te maken
-            #eerst A
-            #density is now a "grid density"
 
-            phi = ((h**3)/(12*Viscosity))*Density
+
+
+            #Voor LHS is phi dphi dx nodig dus begin van
+            #start voor finite differences (unity grid)
+            
+
+            phi = ((h**3)/(12*Viscosity))*Density 
+            #phi dus volledige grid met die waardes afh van plek
 
             #A is a diagonal matrix such that we need to trim phi:
-            phi_diag = sparse.identity(self.Grid.Nx, dtype='float', format="csr")
-            phi_diag.data = phi
+            #altijd de phi grid updaten beginnend met allml eentjes
+            PHI.data = phi
+            DPHIDX.data = DDX @ phi #afleiden
 
-            A = phi_diag @ D2DX2
 
-        #3. Iterate
+            A = PHI @ D2DX2 #geupdatet PHI grid
+            B = DPHIDX @ DDX
+            M = A + B
 
-               
-        
-            #2. RHS Pressure
-    
+
+            #RHS:
+            #Snelheid is te vinden in de Ops class en wordt
+            #constant geupdatet
+            U = self.Ops.SlidingVelocity[time] #is speed time dependend???
+            #!
+            AA = (U/2) * (DDX @ (Density*h))
+
+            hprev = StateVector[time-1].h
+            Densityprev    =self.FluidModel.Density(StateVector[time-1])
+            BB = (Density * h - Densityprev * hprev) / self.Time.dt
+            #Time is gewoon een python class
+
+
+
+            #zoals in LHS: M@p = RHS = AA (Reynolds) + BB (squeeze term)
+            RHS = AA + BB
+            #we willen pressure dus moeten we oplossen maar eerst BC zetten
    
-            #3. Set Boundary Conditions Pressure
+            #3. Set Boundary Conditions Pressure with dirichlet functions that are given
+            SetDirichletLeft(M) 
+            SetDirichletRight(M)
+            #in notes staat pcart-patm en pcc(psi)-patm???
+            RHS[0] = self.Ops.AtmosphericPressure
+            RHS[-1] = self.Ops.CylinderPressure[time] 
+
+
+
            
             
-            #4. Solve System for Pressure + Update
+            #4. Solve System for Pressure + Update oplossen zoals pagina17 (67)
+            #M*x = RHS
+            pstar = spsolve(M, RHS)
+            #pk is gewoon de oude druk van atm
+            deltap = np.maximum(pstar,0) - StateVector[time].Pressure
 
-            
-            #5. LHS Temperature
+
+            #Update pressure
+            #what is theta, zeker iets met relaxationtheta???
+            StateVector[time].Pressure += self.UnderRelaxP * deltap
+
+
+
+
+            #5. LHS Temperature M = I+D+E
+            #I eenheids uit finite diff
+            I = self.Discretization.Identity
+            #Uavg uitdrukking op p5 van taak
+            uavg = -h**2 / (12 * Viscosity) * (DDX @ StateVector[time].Pressure) + self.Ops.SlidingVelocity[time] / 2
+            uplus = np.maximum(uavg,0)
+            umin = np.minimum(uavg,0)
+            #grid aanmaken deze moeten nog uit de loop allemaal
+            #UPLUSdt = sparse.identity(self.Grid.Nx, dtype='float', format="csr")
+            #UMINdt = sparse.identity(self.Grid.Nx, dtype='float', format="csr")
+            UPLUSdt.data = uplus * self.Time.dt
+            UMINdt.data = umin * self.Time.dt
+
+            D = UPLUSdt @ DDXBackward + UMINdt @ DDXForward
+            #ook nog grid voor E
+            #Estart = sparse.identity(self.Grid.Nx, dtype='float', format="csr")
+            Estart.data = (self.Time.dt*Conduc)/(Density * SpecHeat)
+            E = -Estart @ D2DX2
+
+
+            MTemp = I + D + E
 
             
             #6. RHS Temperature
+            #formule voor Q op p5 in slides oo
+            Tprev = StateVector[time-1].Temperature
+            Qavg = (h**2 )/(12* Viscosity) * (DDX @ StateVector[time].Pressure)**2 + Viscosity *( U**2 /h**2 )
+            RHS = Tprev + (self.Time.dt * Qavg) / (Density * SpecHeat)
 
-            
+
+
+            #BC:
+            #vraag: mag dit met Neumann en dirichlet??
+
+
+            if U <= 0:
+                
+                MTemp[0,0:1] = [-1/self.Grid.dx, 1/self.Grid.dx] 
+                MTemp[0,3:] = 0
+                MTemp[-1,-1] = 1 
+                MTemp[-1, 1:-2] = 0
+
+                #Mag dit ook??
+                #SetNeumannLeft(MTemp)
+                #SetDirichletRight(MTemp)
+                RHS[0] = 0.0
+                RHS[-1] = self.Ops.OilTemperature
+            else:
+                MTemp[0,0] = 1     
+                MTemp[2:, 0] = 0
+                MTemp[-1,-2:] = [-1/self.Grid.dx, 1/self.Grid.dx]
+                MTemp[-1,1:-3] = 0
+
+                #zelfde vraag
+                #SetDirichletLeft(MTemp)
+                #SetNeumannRight(MTemp)
+                RHS[0] = self.Ops.OilTemperature
+                RHS[-1] = 0.0
             #7. Solve System for Temperature + Update
+            Tstar = spsolve(MTemp, RHS)
 
+            #deltap = np.maximum(pstar,0 moet 0 vervangen worden???) - StateVector[time].Pressure
+            #StateVector[time].Pressure += self.UnderRelaxP * deltap
+            #voor de rest analoog als bij pressure
+            deltaT = np.maximum(Tstar,self.Ops.OilTemperature) - StateVector[time].Temperature
+            StateVector[time].Temperature += self.UnderRelaxT * deltaT
+            #Waarom wordt er vanaf 300 graden 300 genomen???
+            #StateVector[time].Temperature = np.minimum(StateVector[time].Temperature, 300+273.15)
             
             #8. Calculate other quantities
- 
-            
-            #9. Residuals & Report
-         
+            k += 1
+
+            epsP[k] = np.linalg.norm(deltap / StateVector[time].Pressure) / self.Grid.Nx
+            epsT[k] = np.linalg.norm(deltaT / StateVector[time].Temperature) / self.Grid.Nx
            
-            #10. Provide a plot of the solution
+            
             # 9. Provide a plot of the solution
             if (k % 500 == 0):
-                CFL=np.max(Uaveraged)*self.Time.dt/self.Grid.dx
+                CFL=np.max(uavg)*self.Time.dt/self.Grid.dx
                 print("ReynoldsSolver:: CFL", np.round(CFL,2) ,"Residual [P,T] @Time:",round(self.Time.t[time]*1000,5),"ms & Iteration:",k,"-> [",np.round(epsP[k],6),",",np.round(epsT[k],6),"]")
                 if self.VisualFeedbackLevel>2:
                     fig=vis.Report_PT(self.Grid,StateVector[time]) 
@@ -165,3 +271,7 @@ class ReynoldsSolver:
 
             
         #11. Calculate other quantities (e.g. Wall Shear Stress, Hydrodynamic Load, ViscousFriction)
+            StateVector[time].HydrodynamicLoad = np.trapz(StateVector[time].Pressure, dx=self.Grid.dx)
+            WallShearStress_h = Viscosity * U/h  + (DDX @ StateVector[time].Pressure) * h /2
+            StateVector[time].WallShearStress = WallShearStress_h
+            StateVector[time].ViscousFriction = np.trapz(StateVector[time].WallShearStress, dx=self.Grid.dx)
