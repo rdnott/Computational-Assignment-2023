@@ -11,9 +11,9 @@ class FiniteDifferences:
     def __init__(self,Grid):
         
         #Schemes for first-order (D)     i-1   i  i+1
-        self.ForwardStencilD = np.array([0.0,-1.0,1.0])/(Grid.dx)
+        self.ForwardStencilD = np.array([-1.0,1.0,0.0])/(Grid.dx)
         self.CentralStencilD = np.array([-1.0,0.0,1.0])/(2.0*Grid.dx)
-        self.BackwardStencilD= np.array([-1.0,1.0,0.0])/(Grid.dx)
+        self.BackwardStencilD= np.array([0.0,-1.0,1.0])/(Grid.dx)
         
         
         # second order (DD)              i-2  i-1  i  i+1  i+2

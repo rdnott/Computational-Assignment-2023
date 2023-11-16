@@ -28,6 +28,7 @@ class TriboContact:
         self.f_b=0.3;
         self.RoughnessParameter=self.Zeta*self.Kappa*self.Roughness
         self.RoughnessSlope=self.Roughness/self.Kappa
+        self.Lambda_c = 2.2239
         
         """Wear Coefficients"""
         self.WearCoefficient_Cylinder=2.5e-10;
@@ -53,10 +54,10 @@ class TriboContact:
 
     def AsperityContact(self,StateVector,time):
 
-        lambda_c  = 2.2239
+        
         Lambda=StateVector[time].Lambda;
 
-        if Lambda < lambda_c:  # contact is made, all formulas come from assignement
+        if Lambda < self.Lambda_c:  # contact is made, all formulas come from assignement
             StateVector[time].AsperityArea= np.pi**2 * self.RoughnessParameter ** 2 * self.L * np.sqrt(self.Roughness * (self.b ** 2) * 0.25 / self.delta) * integral.quad(self.I2, Lambda, self.Lambda_c,limit=100)[0]
             StateVector[time].AsperityLoad= 16/15 * np.sqrt(2) * np.pi * (self.RoughnessParameter ** 2) * np.sqrt(self.Roughness / self.Kappa) * self.YoungsModulus * np.sqrt(self.Roughness * (self.b ** 2)/(4* self.delta)) * integral.quad(self.I52, Lambda, self.Lambda_c,limit=100)[0]
             StateVector[time].AsperityFriction= self.Tau0 * StateVector[time].AsperityArea / self.L + self.f_b * StateVector[time].AsperityLoad
