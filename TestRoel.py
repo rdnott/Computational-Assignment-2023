@@ -1,10 +1,27 @@
-import scipy.sparse as sp
+import numpy as np
 
-# Define the dimensions of the identity matrix
-Nx = 5  # Change this to your desired size
+def forward_iteration_matrix_2d_3x3():
+    N = 9  # 3x3 grid
+    forward_matrix = np.zeros((N, N))
+    idx = np.arange(N).reshape((3, 3), order='F')
 
-# Create the sparse identity matrix in CSR format
-PHI = sp.identity(Nx, dtype='float', format='csr')
+    for i in range(3):
+        for j in range(3):
+            current_index = idx[i, j]
 
-# Print the sparse identity matrix
-print(PHI)
+            if i + 1 < 3:
+                forward_matrix[current_index, idx[i + 1, j]] = 1
+
+            if j + 1 < 3:
+                forward_matrix[current_index, idx[i, j + 1]] = 1
+
+    return forward_matrix
+
+# Example usage
+forward_matrix_2d_3x3 = forward_iteration_matrix_2d_3x3()
+
+# Print the 3x3 forward iteration matrix
+print("Forward Iteration Matrix (2D - 3x3):")
+print(forward_matrix_2d_3x3)
+
+# https://github.com/KarelVanHoey/MD_PistonRing
