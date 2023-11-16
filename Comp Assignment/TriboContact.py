@@ -78,7 +78,7 @@ class TriboContact:
     def Wear(self,Ops,Time,StateVector,time):
         
         # Calculate Wear Depth on the Piston Ring  
-        p_t = StateVector[time].HerzianContactPressure
+        p_t = StateVector[time].HertzianContactPressure
         s_t = Ops.SlidingDistance[time - 1]
         s_tmin = Ops.SlidingDistance[time-2] if time != 1 else 0.0
 
