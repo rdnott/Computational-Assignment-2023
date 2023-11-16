@@ -70,7 +70,7 @@ Nodes=256;
 Grid=Grid(Contact,Nodes)
 
 """Temporal Discretization"""
-TimeStep=1e-5 # Choose Temperal Resolution 
+TimeStep=5e-5 # Choose Temperal Resolution 
 EndTime=4.0*np.pi/(EngineRPM*(2.0*np.pi/60.0))
 Time=Time(EndTime,TimeStep)
 
@@ -106,7 +106,7 @@ Reynolds.SetSolver(MaxIterReynolds,TolP,UnderRelaxP,TolT,UnderRelaxT,VisualFeedb
 """ Set Load Balance loop"""
 MaxIterLoad=40
 Tolh0=1e-3;
-UnderRelaxh0=0.2
+UnderRelaxh0=0.25
 
 """Start from Initial guess or Load Initial State"""
 
