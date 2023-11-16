@@ -17,10 +17,10 @@ class FiniteDifferences:
         
         
         # second order (DD)              i-2  i-1  i  i+1  i+2
-        self.ForwardStencilDD = np.array([0.0,0.0,1.0,-2.0,1.0])/(Grid.dx**2)
-        self.CentralStencilDD = np.array([0.0,1.0,-2.0,1.0,0.0])/(Grid.dx**2)
-        self.BackwardStencilDD= np.array([1.0,-2.0,1.0,0.0,0.0])/(Grid.dx**2)
-        
+        #self.ForwardStencilDD = np.array([0.0,0.0,1.0,-2.0,1.0])/(Grid.dx**2)
+        #self.CentralStencilDD = np.array([0.0,1.0,-2.0,1.0,0.0])/(Grid.dx**2)
+        #self.BackwardStencilDD= np.array([1.0,-2.0,1.0,0.0,0.0])/(Grid.dx**2)
+        self.CentralStencilDD = np.array([1.0,-2.0,1.0])/(Grid.dx**2)
 
         
         # Sparse Matrix Operators
@@ -40,8 +40,8 @@ class FiniteDifferences:
         
         # second order
         self.D2DX2=sparse.diags(self.CentralStencilDD,  [-1, 0, 1], shape=(Grid.Nx, Grid.Nx), dtype='float', format="csr")
-        self.D2DX2[-1,-3:]=self.BackwardStencilDD       #Define right boundary stencil
-        self.D2DX2[0,:3]=self.ForwardStencilDD          #Define left boundary stencil
+        self.D2DX2[-1,-3:]=self.CentralStencilDD       #Define right boundary stencil
+        self.D2DX2[0,:3]=self.CentralStencilDD          #Define left boundary stencil
         
 
     # Efficient Implementation for 1D csr type FD matrix
