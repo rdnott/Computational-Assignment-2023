@@ -15,7 +15,7 @@ import socket
 import sys
 
 hostname=socket.gethostname()
-Tier2List=['swallot', 'skitty', 'victini', 'slaking', 'kirlia', 'doduo']
+Tier2List=['swallot', 'skitty', 'victini', 'donphan', 'kirlia', 'doduo']
 if any(list(i in hostname for i in Tier2List)):
     import matplotlib
     matplotlib.use('Agg')
@@ -42,10 +42,10 @@ import VisualLib as vis
 
 """General Settings for Input and Output """
 VisualFeedbackLevel=1 # [0,1,2,3] = [none, per time step, per load iteration, per # reynolds iterations]
-SaveFig2File=False # Save figures to file? True/False
+SaveFig2File=True # Save figures to file? True/False
 LoadInitialState=False # Load The IntialSate? True/False
 InitTime=0.0 #Initial Time to Load?
-SaveStates=False # Save States to File? True/False
+SaveStates=True # Save States to File? True/False
 
 """I/O Operator"""
 IO=IOHDF5()
