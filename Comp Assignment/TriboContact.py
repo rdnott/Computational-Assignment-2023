@@ -62,14 +62,15 @@ class TriboContact:
             StateVector[time].AsperityLoad= 16/15 * np.sqrt(2) * np.pi * (self.RoughnessParameter ** 2) * np.sqrt(self.Roughness / self.Kappa) * self.YoungsModulus * np.sqrt(self.Roughness * (self.b ** 2)/(4* self.delta)) * integral.quad(self.I52, Lambda, self.Lambda_c,limit=100)[0]
             StateVector[time].AsperityFriction= self.Tau0 * StateVector[time].AsperityArea / self.L + self.f_b * StateVector[time].AsperityLoad
             StateVector[time].AsperityContactPressure= StateVector[time].AsperityLoad/StateVector[time].AsperityArea
-            StateVector[time].HertzianContactPressure= (np.pi / 4) * np.sqrt((StateVector[time].AsperityLoad * self.YoungsModulus) / (np.pi * self.Engine.CompressionRing.Curvature))  
+              
         
         else: # no contact is made so no loads
             StateVector[time].AsperityArea= 0
             StateVector[time].AsperityLoad= 0
             StateVector[time].AsperityFriction= 0
             StateVector[time].AsperityContactPressure= 0
-            StateVector[time].HertzianContactPressure= 0
+            
+        StateVector[time].HertzianContactPressure= (np.pi / 4) * np.sqrt((StateVector[time].AsperityLoad * self.YoungsModulus) / (np.pi * self.Engine.CompressionRing.Curvature))
 
 
 #################
