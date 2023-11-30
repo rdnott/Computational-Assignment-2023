@@ -181,7 +181,7 @@ while time<Time.nt:
     h0[0] = StateVector[time-1].h0
     h0[1] = h0[0]*1.01
 
-    Delta_Load = np.zeros(MaxIterLoad)
+    Delta_Load = np.ones(MaxIterLoad)
     F_elas = 16*Engine.CompressionRing.FreeGapSize*Engine.Cylinder.Material.YoungsModulus*Engine.CompressionRing.Thickness*Engine.CompressionRing.Width**3/(36*np.pi*(Engine.Cylinder.Radius*2)**4)
 
     """Start Load Balance Loop"""

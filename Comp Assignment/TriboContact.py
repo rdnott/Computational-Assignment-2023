@@ -55,7 +55,7 @@ class TriboContact:
     def AsperityContact(self,StateVector,time):
 
         
-        Lambda=StateVector[time].Lambda;
+        Lambda=StateVector[time].Lambda
 
         if Lambda < self.Lambda_c:  # contact is made, all formulas come from assignement
             StateVector[time].AsperityArea= np.pi**2 * self.RoughnessParameter ** 2 * self.L * np.sqrt(self.Roughness * (self.b ** 2) * 0.25 / self.delta) * integral.quad(self.I2, Lambda, self.Lambda_c,limit=100)[0]
@@ -69,7 +69,7 @@ class TriboContact:
             StateVector[time].AsperityLoad= 0
             StateVector[time].AsperityFriction= 0
             StateVector[time].AsperityContactPressure= 0
-            
+
         StateVector[time].HertzianContactPressure= (np.pi / 4) * np.sqrt((StateVector[time].AsperityLoad * self.YoungsModulus) / (np.pi * self.Engine.CompressionRing.Curvature))
 
 
