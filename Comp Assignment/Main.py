@@ -177,7 +177,7 @@ while time<Time.nt:
     k = 1
 
     ## Guess ## #NOG EENS NA KIJKEN VOOR h0[1]
-    h0 = np.zeros(MaxIterLoad + 1) #If index error, do MaxIterLoad+2
+    h0 = np.ones(MaxIterLoad + 1) #If index error, do MaxIterLoad+2
     h0[0] = StateVector[time-1].h0
     h0[1] = h0[0]*1.01
 
