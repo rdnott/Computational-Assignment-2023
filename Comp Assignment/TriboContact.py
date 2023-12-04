@@ -86,10 +86,10 @@ class TriboContact:
         StateVector[time].WearDepthRing= StateVector[time-1].WearDepthRing +  self.WearCoefficient_CompressionRing * p_t/ self.Engine.CompressionRing.Material.Hardness *(s_t-s_tmin) # accumulated wear depth on the ring
 
         # Calculate The Wear Depth on the Cylinder wall
-        StateVector[time].WearLocationsCylinder=np.unique(np.round(Ops.PistonPosition, 6)) # array of unique Positions where the pistion passes by  
+        StateVector[time].WearLocationsCylinder=np.unique(np.round(Ops.PistonPosition, 8)) # array of unique Positions where the pistion passes by  
 
-        Local_wear = np.zeros(np.size(StateVector[time].WearLocationsCylinder))
+        Local_wear = np.zeros(np.size(StateVector[time].WearDepthCylinder))
         # if position is close enough to a position in the wearlocations, it is increased by the wear at that moment
-        Local_wear[np.where(StateVector[time].WearLocationsCylinder == np.round(Ops.PistonPosition[time],6))[0][0]] += self.WearCoefficient_Cylinder*p_t/self.Engine.Cylinder.Material.Hardness *np.abs(Ops.PistonVelocity[time])*Time.dt 
+        Local_wear[np.where(StateVector[time].WearLocationsCylinder == np.round(Ops.PistonPosition[time],8))[0][0]] += self.WearCoefficient_Cylinder*p_t/self.Engine.Cylinder.Material.Hardness *np.abs(Ops.PistonVelocity[time])*Time.dt 
 
         StateVector[time].WearDepthCylinder= StateVector[time-1].WearDepthCylinder + Local_wear #incremental wear depth on the positions in the array above
