@@ -83,6 +83,7 @@ class ReynoldsSolver:
         
         #define your own when desired
         k=0
+        I = sparse.identity(self.Grid.Nx, dtype='float', format="csr")
         UPLUSdt = sparse.identity(self.Grid.Nx, dtype='float', format="csr")
         UMINdt = sparse.identity(self.Grid.Nx, dtype='float', format="csr")
         Estart = sparse.identity(self.Grid.Nx, dtype='float', format="csr")
@@ -103,11 +104,11 @@ class ReynoldsSolver:
             Conduc = ConducFunc(StateVector[time])
             h = StateVector[time].h #gewoon filmthickness eruithalen
 
-            #statevector aanpassen
-            StateVector[time].Viscosity = Viscosity
-            StateVector[time].Density = Density
-            StateVector[time].SpecHeat = SpecHeat
-            StateVector[time].Conduc = Conduc
+            # #statevector aanpassen
+            # StateVector[time].Viscosity = Viscosity
+            # StateVector[time].Density = Density
+            # StateVector[time].SpecHeat = SpecHeat
+            # StateVector[time].Conduc = Conduc
 
 
         
@@ -178,7 +179,6 @@ class ReynoldsSolver:
 
             #5. LHS Temperature M = I+D+E
             #I eenheids uit finite diff
-            I = self.Discretization.Identity
             #Uavg uitdrukking op p5 van taak
             uavg = -h**2 / (12 * Viscosity) * (DDX @ StateVector[time].Pressure) + self.Ops.SlidingVelocity[time] / 2
             uplus = np.maximum(uavg,0)
@@ -213,25 +213,26 @@ class ReynoldsSolver:
 
             if U <= 0:
                 
-                MTemp[0,0:1] = [-1/self.Grid.dx, 1/self.Grid.dx] 
-                MTemp[0,3:] = 0
-                MTemp[-1,-1] = 1 
-                MTemp[-1, 1:-2] = 0
+                # MTemp[0,0:1] = [-1/self.Grid.dx, 1/self.Grid.dx] 
+                # MTemp[0,3:] = 0
+                # MTemp[-1,-1] = 1 
+                # MTemp[-1, 1:-2] = 0
 
                 #Mag dit ook??
-                #SetNeumannLeft(MTemp)
-                #SetDirichletRight(MTemp)
+                SetNeumannLeft(MTemp)
+                SetDirichletRight(MTemp)
+                
                 RHS[0] = 0.0
                 RHS[-1] = self.Ops.OilTemperature
             else:
-                MTemp[0,0] = 1     
-                MTemp[2:, 0] = 0
-                MTemp[-1,-2:] = [-1/self.Grid.dx, 1/self.Grid.dx]
-                MTemp[-1,1:-3] = 0
+                # MTemp[0,0] = 1     
+                # MTemp[2:, 0] = 0
+                # MTemp[-1,-2:] = [-1/self.Grid.dx, 1/self.Grid.dx]
+                # MTemp[-1,1:-3] = 0
 
                 #zelfde vraag
-                #SetDirichletLeft(MTemp)
-                #SetNeumannRight(MTemp)
+                SetDirichletLeft(MTemp)
+                SetNeumannRight(MTemp)
                 RHS[0] = self.Ops.OilTemperature
                 RHS[-1] = 0.0
             #7. Solve System for Temperature + Update
@@ -240,7 +241,7 @@ class ReynoldsSolver:
             #deltap = np.maximum(pstar,0 moet 0 vervangen worden???) - StateVector[time].Pressure
             #StateVector[time].Pressure += self.UnderRelaxP * deltap
             #voor de rest analoog als bij pressure
-            deltaT = np.maximum(Tstar,self.Ops.OilTemperature) - StateVector[time].Temperature
+            deltaT = np.minimum(np.maximum(Tstar,self.Ops.OilTemperature),2.0*self.Ops.OilTemperature) - StateVector[time].Temperature
             StateVector[time].Temperature += self.UnderRelaxT * deltaT
             #Waarom wordt er vanaf 300 graden 300 genomen???
             #StateVector[time].Temperature = np.minimum(StateVector[time].Temperature, 300+273.15)
@@ -271,7 +272,7 @@ class ReynoldsSolver:
 
             
         #11. Calculate other quantities (e.g. Wall Shear Stress, Hydrodynamic Load, ViscousFriction)
-            StateVector[time].HydrodynamicLoad = np.trapz(StateVector[time].Pressure, dx=self.Grid.dx)
+            StateVector[time].HydrodynamicLoad = np.trapz(StateVector[time].Pressure, self.Grid.x)
             WallShearStress_h = Viscosity * U/h  + (DDX @ StateVector[time].Pressure) * h /2
             StateVector[time].WallShearStress = WallShearStress_h
-            StateVector[time].ViscousFriction = np.trapz(StateVector[time].WallShearStress, dx=self.Grid.dx)
+            StateVector[time].ViscousFriction = np.trapz(StateVector[time].WallShearStress, x=self.Grid.x)

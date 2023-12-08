@@ -43,7 +43,7 @@ import VisualLib as vis
 """General Settings for Input and Output """
 VisualFeedbackLevel=1 # [0,1,2,3] = [none, per time step, per load iteration, per # reynolds iterations]
 SaveFig2File=True # Save figures to file? True/False
-LoadInitialState=False # Load The IntialSate? True/False
+LoadInitialState=True # Load The IntialSate? True/False
 InitTime=0.0 #Initial Time to Load?
 SaveStates=True # Save States to File? True/False
 
@@ -177,16 +177,12 @@ while time<Time.nt:
     k = 1
 
     ## Guess ## #NOG EENS NA KIJKEN VOOR h0[1]
-    h0 = np.zeros(MaxIterLoad + 1) #If index error, do MaxIterLoad+2
-    h0[0] = StateVector[time-1].h0
-    h0[1] = h0[0]*1.01
-
-    Delta_Load = np.zeros(MaxIterLoad)
-    F_elas = 16*Engine.CompressionRing.FreeGapSize*Engine.Cylinder.Material.YoungsModulus*Engine.CompressionRing.Thickness*Engine.CompressionRing.Width**3/(36*np.pi*(Engine.Cylinder.Radius*2)**4)
-
+    h0 = np.ones(MaxIterLoad + 1)*StateVector[time-1].h0 #If index error, do MaxIterLoad+2
+    Delta_Load = np.ones(MaxIterLoad+1)
+    
     """Start Load Balance Loop"""
     ### TO DO ###
-    while k<MaxIterLoad and eps_h0[k] >Tolh0: 
+    while k<MaxIterLoad and eps_h0[k] > Tolh0: 
     
         """a. Calculate Film Thickness Profile"""
         StateVector[time].h= h0[k] + 4 * Engine.CompressionRing.CrownHeight * (Grid.x**2) / (Engine.CompressionRing.Thickness**2)
@@ -199,13 +195,19 @@ while time<Time.nt:
         Reynolds.SolveReynolds(StateVector,time)
         
         """d. Newton Raphson Iteration to find the h0"""
-        Delta_Load[k] = StateVector[time].HydrodynamicLoad + StateVector[time].AsperityLoad - Ops.CompressionRingLoad[time] - F_elas
+        Delta_Load[k] = StateVector[time].HydrodynamicLoad + StateVector[time].AsperityLoad - Ops.CompressionRingLoad[time]
 
-        h0[k +1] = max(h0[k] - UnderRelaxh0 * ((Delta_Load[k]) / (Delta_Load[k] - Delta_Load[k - 1])) * (h0[k] - h0[k - 1]), 0.1 * Contact.Roughness)
-        
+        if k>0:
+            h0[k +1] = max(h0[k] - UnderRelaxh0 * ((Delta_Load[k]) / (Delta_Load[k] - Delta_Load[k - 1])) * (h0[k] - h0[k - 1]), 0.1 * Contact.Roughness)
+        elif k==0:
+            h0[k +1] = h0[k] - UnderRelaxh0 *0.01*h0[k]
+        elif k==MaxIterLoad:
+            break
+
+
         """e. Update & Calculate Residual"""      
         k += 1
-        eps_h0[k] = abs(h0[k] / h0[k-1] - 1) 
+        eps_h0[k] = abs(h0[k] / h0[k-1] - 1.0) 
        
         """Load Balance Output""" 
         print("Load Balance:: Residuals [h0] @Time:",round(Time.t[time]*1000,5),"ms & Iteration:",k,"-> [",np.round(eps_h0[k],2+int(np.abs(np.log10(Tolh0)))),"]\n")
@@ -232,7 +234,9 @@ while time<Time.nt:
     ###########
     ## TO DO ##
     ###########
-    StateVector[time].Hersey=abs(Ops.SlidingVelocity[time]) * StateVector[time].Viscosity / StateVector[time].HydrodynamicLoad
+    Viscosity=Mixture.DynamicViscosity(StateVector[time])
+
+    StateVector[time].Hersey=abs(Ops.SlidingVelocity[time]) * Viscosity / StateVector[time].HydrodynamicLoad
     StateVector[time].COF=(StateVector[time].ViscousFriction + StateVector[time].AsperityFriction) / StateVector[time].HydrodynamicLoad
     Contact.Wear(Ops,Time,StateVector,time)
  
