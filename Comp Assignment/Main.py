@@ -161,6 +161,7 @@ else:
         Data2File={'State': StateVector[time]}
         IO.SaveData(FileName,Data2File)
 
+ring_shape = 4 * Engine.CompressionRing.CrownHeight * (Grid.x**2) / (Engine.CompressionRing.Thickness**2)
 
 """Start Time Loop"""
 start_time = TimeKeeper.time()
@@ -185,7 +186,7 @@ while time<Time.nt:
     while k<MaxIterLoad and eps_h0[k] > Tolh0: 
     
         """a. Calculate Film Thickness Profile"""
-        StateVector[time].h= h0[k] + 4 * Engine.CompressionRing.CrownHeight * (Grid.x**2) / (Engine.CompressionRing.Thickness**2)
+        StateVector[time].h= h0[k] + ring_shape
 
         """b. Calculate Asperity Load"""
         StateVector[time].Lambda = h0[k]/Contact.Roughness
