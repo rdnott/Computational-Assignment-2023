@@ -98,11 +98,11 @@ for time in range(Time.nt-1):
     StateVector[time].HertzianContactPressure=float(Data['State']['HertzianContactPressure'])
     StateVector[time].COF=float(Data['State']['COF'])
     StateVector[time].WearDepthRing=float(Data['State']['WearDepthRing'])
-    StateVector[time].Viscosity=Data['State']['Viscosity']
-    StateVector[time].VapourVolumeFraction=Data['State']['VapourVolumeFraction']
-    StateVector[time].Density=Data['State']['Density']
+    # StateVector[time].Viscosity=Data['State']['Viscosity']
+    # StateVector[time].VapourVolumeFraction=Data['State']['VapourVolumeFraction']
+    # StateVector[time].Density=Data['State']['Density']
 
-    StateVector[time].Hersey = abs(Ops.SlidingVelocity[time]) * StateVector[time].Viscosity / ( StateVector[time].HydrodynamicLoad + StateVector[time].AsperityLoad)
+    # StateVector[time].Hersey = abs(Ops.SlidingVelocity[time]) * StateVector[time].Viscosity / ( StateVector[time].HydrodynamicLoad + StateVector[time].AsperityLoad)
 
     StateVector[time].h= Data['State']['h']
     StateVector[time].Pressure=Data['State']['Pressure']
@@ -135,7 +135,7 @@ plt.ylabel('Dimensionless film thickness ($\Lambda$) [-]')
 plt.xlim([-.5, 15])
 #plt.vlines(Ops.CranckAngle[time],0,40,'k','--', linewidth=.6)
 plt.ylim([0,40])
-plt.savefig('PostProcessing\Dimensionless_Film_thickness.png',dpi=300)
+plt.savefig('Comp Assignment\PostProcessing\Dimensionless_Film_thickness.png',dpi=300)
 plt.show()
 plt.close()
 
