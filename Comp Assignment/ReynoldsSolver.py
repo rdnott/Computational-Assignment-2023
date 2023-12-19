@@ -67,7 +67,7 @@ class ReynoldsSolver:
         ViscosityFunc  =self.FluidModel.DynamicViscosity
         SpecHeatFunc   =self.FluidModel.SpecificHeatCapacity
         ConducFunc     =self.FluidModel.ThermalConductivity      
-        
+        VapourVolumeFractionFunc = self.FluidModel.VapourVolumeFraction
         #fluidfraction??
 
 
@@ -103,13 +103,13 @@ class ReynoldsSolver:
             Viscosity = ViscosityFunc(StateVector[time])
             Conduc = ConducFunc(StateVector[time])
             h = StateVector[time].h #gewoon filmthickness eruithalen
-
+            VapourVolumeFraction = VapourVolumeFractionFunc(StateVector[time])
             # #statevector aanpassen
             StateVector[time].Viscosity = Viscosity
             StateVector[time].Density = Density
             StateVector[time].SpecHeat = SpecHeat
             StateVector[time].Conduc = Conduc
-
+            StateVector[time].VapourVolumeFraction = VapourVolumeFraction
 
         
             #1. LHS Pressure
