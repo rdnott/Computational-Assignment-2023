@@ -105,10 +105,10 @@ class ReynoldsSolver:
             h = StateVector[time].h #gewoon filmthickness eruithalen
 
             # #statevector aanpassen
-            # StateVector[time].Viscosity = Viscosity
-            # StateVector[time].Density = Density
-            # StateVector[time].SpecHeat = SpecHeat
-            # StateVector[time].Conduc = Conduc
+            StateVector[time].Viscosity = Viscosity
+            StateVector[time].Density = Density
+            StateVector[time].SpecHeat = SpecHeat
+            StateVector[time].Conduc = Conduc
 
 
         
