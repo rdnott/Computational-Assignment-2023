@@ -82,8 +82,8 @@ Discretization=FiniteDifferences(Grid)
 
 """Read Data"""
 time=0
-for time in range(Time.nt-1):
-    FileName='test_09_12\Data\Time_'+str(round(Time.t[time]*1000,4))+'ms.h5' 
+for time in range(1,Time.nt-1):
+    FileName='Comp_Assignment_19_12\Data\Time_'+str(round(Time.t[time]*1000,4))+'ms.h5' 
 
     Data=IO.ReadData(FileName)
     StateVector[time].h0=float(Data['State']['h0'])
@@ -98,11 +98,11 @@ for time in range(Time.nt-1):
     StateVector[time].HertzianContactPressure=float(Data['State']['HertzianContactPressure'])
     StateVector[time].COF=float(Data['State']['COF'])
     StateVector[time].WearDepthRing=float(Data['State']['WearDepthRing'])
-    # StateVector[time].Viscosity=Data['State']['Viscosity']
-    # StateVector[time].VapourVolumeFraction=Data['State']['VapourVolumeFraction']
-    # StateVector[time].Density=Data['State']['Density']
+    StateVector[time].Viscosity=Data['State']['Viscosity']
+    StateVector[time].VapourVolumeFraction=Data['State']['VapourVolumeFraction']
+    StateVector[time].Density=Data['State']['Density']
 
-    # StateVector[time].Hersey = abs(Ops.SlidingVelocity[time]) * StateVector[time].Viscosity / ( StateVector[time].HydrodynamicLoad + StateVector[time].AsperityLoad)
+    StateVector[time].Hersey = abs(Ops.SlidingVelocity[time]) * StateVector[time].Viscosity / ( StateVector[time].HydrodynamicLoad + StateVector[time].AsperityLoad)
 
     StateVector[time].h= Data['State']['h']
     StateVector[time].Pressure=Data['State']['Pressure']

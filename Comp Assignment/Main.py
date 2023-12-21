@@ -205,11 +205,14 @@ while time<Time.nt:
         elif k==MaxIterLoad:
             break
 
+        
+
 
         """e. Update & Calculate Residual"""      
         k += 1
         eps_h0[k] = abs(h0[k] / h0[k-1] - 1.0) 
-       
+        StateVector[time].h0 = h0[k]
+        
         """Load Balance Output""" 
         print("Load Balance:: Residuals [h0] @Time:",round(Time.t[time]*1000,5),"ms & Iteration:",k,"-> [",np.round(eps_h0[k],2+int(np.abs(np.log10(Tolh0)))),"]\n")
         if VisualFeedbackLevel>1:
