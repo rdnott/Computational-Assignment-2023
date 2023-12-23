@@ -87,7 +87,6 @@ for time in range(1,Time.nt-1):
 
     Data=IO.ReadData(FileName)
     StateVector[time].h0=float(Data['State']['h0'])
-    #StateVector[time].Hersey=float(Data['State']['Hersey'])
     StateVector[time].Lambda=float(Data['State']['Lambda'])
     StateVector[time].HydrodynamicLoad=float(Data['State']['HydrodynamicLoad'])
     StateVector[time].ViscousFriction=float(Data['State']['ViscousFriction'])
@@ -165,9 +164,31 @@ vis.Report_Ops(Time, Ops, interesting_points)
 plt.show()
 plt.close()
 
+def Report_PT1(Grid,State): # initiatlization
+
+    f1, ax1 = plt.subplots()
+    color = 'tab:blue'
+    ax1.set_xlabel('$x [m]$ at location %s (%.2f ms)' %(np.where(interesting_points == time)[0][0]+1, time/1000*50))
+    ax1.set_ylabel('$P [MPa]$',color=color)
+    ax1.plot(Grid.x,State.Pressure/1e6,'x-', linewidth=1,color=color)
+    ax1.tick_params(axis='y')
+    ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+    color = 'tab:red'
+    ax2.set_ylabel('$T [^\circ C]$',color=color)  # we already handled the x-label with ax1
+    ax2.plot(Grid.x,State.Temperature-273.15,'x-', linewidth=1,color=color)
+    ax2.tick_params(axis='y')
+    f1.tight_layout() # otherwise the right y-label is slightly clipped
+    plt.show()
+    return f1
+
+
+
+
+
+
 for time in interesting_points:
-    fig=vis.Report_PT(Grid,StateVector[time])
-    figname="PostProcessing/PT@Time_"+str(round(Time.t[time]*1000,5))+"ms.png" 
+    fig=Report_PT1(Grid,StateVector[time])
+    #figname="PostProcessing/PT@Time_"+str(round(Time.t[time]*1000,5))+"ms.png" 
     #fig.savefig(figname, dpi=300)
     plt.close(fig)
 
@@ -177,7 +198,8 @@ for time in interesting_points:
     plt.plot(Grid.x*1000, StateVector[time].VapourVolumeFraction)
     plt.ylabel( 'Vapour Volume Fraction '+str(chr(945)) + ' [-]')
     plt.xlabel('x [mm] at ' +str(time) )
-    figname="PostProcessing/alpha@Time_"+"{0:.2f}".format(round(Time.t[time]*1000,5))+"ms.png" 
+    plt.title('Location %s (%.2f ms)' %(np.where(interesting_points == time)[0][0]+1, time/1000*50))
+    # figname="PostProcessing/alpha@Time_"+"{0:.2f}".format(round(Time.t[time]*1000,5))+"ms.png" 
     #plt.savefig(figname,dpi=300)
     plt.show()
     plt.close()
@@ -187,33 +209,37 @@ for time in interesting_points:
     plt.plot(Grid.x*1000, StateVector[time].Density)
     plt.ylabel( 'Density '+str(chr(961)) + '  [kg/m³]')
     plt.xlabel('x [mm] at ' +str(time) )
-    figname="PostProcessing/rho@Time_"+"{0:.2f}".format(round(Time.t[time]*1000,5))+"ms.png" 
+    plt.title('Location %s (%.2f ms)' %(np.where(interesting_points == time)[0][0]+1, time/1000*50))
+    # figname="PostProcessing/rho@Time_"+"{0:.2f}".format(round(Time.t[time]*1000,5))+"ms.png" 
     #plt.savefig(figname,dpi=300)
-    plt.show()
+    #plt.show()
     plt.close()
     
     plt.plot(Grid.x*1000, StateVector[time].Viscosity)
     plt.ylabel( 'Viscosity '+str(chr(956)) + '  Pa s')
     plt.xlabel('x [mm] at ' +str(time) )
-    figname="PostProcessing/mu@Time_"+"{0:.2f}".format(round(Time.t[time]*1000,5))+"ms.png" 
+    plt.title('Location %s (%.2f ms)' %(np.where(interesting_points == time)[0][0]+1, time/1000*50))
+    # figname="PostProcessing/mu@Time_"+"{0:.2f}".format(round(Time.t[time]*1000,5))+"ms.png" 
     #plt.savefig(figname,dpi=300)
-    plt.show()
+    #plt.show()
     plt.close()
 
     plt.plot(Grid.x*1000, StateVector[time].SpecHeat)
     plt.ylabel( 'Specific Heat Capacity (c) [J/(K*kg)]')
     plt.xlabel('x [mm] at ' +str(time) )
-    figname="PostProcessing/SpecHeat@Time_"+"{0:.2f}".format(round(Time.t[time]*1000,5))+"ms.png" 
+    plt.title('Location %s (%.2f ms)' %(np.where(interesting_points == time)[0][0]+1, time/1000*50))
+    # figname="PostProcessing/SpecHeat@Time_"+"{0:.2f}".format(round(Time.t[time]*1000,5))+"ms.png" 
     #plt.savefig(figname,dpi=300)
-    plt.show()
+    #plt.show()
     plt.close()    
 
     plt.plot(Grid.x*1000, StateVector[time].Conduc)
     plt.ylabel( 'Thermal Conductivity '+str(chr(954)) + ' [W/(m*K)]')
     plt.xlabel('x [mm] at ' +str(time) )
-    figname="PostProcessing/SpecHeat@Time_"+"{0:.2f}".format(round(Time.t[time]*1000,5))+"ms.png" 
+    plt.title('Location %s (%.2f ms)' %(np.where(interesting_points == time)[0][0]+1, time/1000*50))
+    # figname="PostProcessing/SpecHeat@Time_"+"{0:.2f}".format(round(Time.t[time]*1000,5))+"ms.png" 
     #plt.savefig(figname,dpi=300)
-    plt.show()
+    #plt.show()
     plt.close()       
 
 #v Velocity Field
@@ -270,7 +296,7 @@ for time in interesting_points:
 
     plt.plot(x_grid*1000, StateVector[time].h*1000)
     figname="PostProcessing/Vectorplot@Time_"+"{0:.2f}".format(round(Time.t[time]*1000,5))+"ms.png" 
-    plt.title('Point ' + str(j))
+    plt.title('Location %s (%.2f ms)' %(np.where(interesting_points == time)[0][0]+1, time/1000*50))
     plt.xlabel('x [mm]')
     plt.ylabel('z [mm]')
     plt.title('Vectorplot for t =' + str(time*5/100) + 'ms')

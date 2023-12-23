@@ -47,14 +47,18 @@ class FiniteDifferences:
     # Efficient Implementation for 1D csr type FD matrix
     #do not Change implementation below!
     def SetDirichletLeft(self,M):
-        M.data[[0,1,2]]=[1.0, 0.0, 0.0]
+        M.sort_indices()
+        M.data[M.indptr[0]:M.indptr[1]]=[1.0, 0.0, 0.0]
 
     def SetDirichletRight(self,M):
-        M.data[[-3,-2,-1]]=[0.0, 0.0, 1.0]
+        M.sort_indices()
+        M.data[M.indptr[-2]:M.indptr[-1]]=[0.0, 0.0, 1.0]
     
     def SetNeumannLeft(self,M):
-        M.data[[0,1,2]]=self.BackwardStencilD
+        M.sort_indices()
+        M.data[M.indptr[0]:M.indptr[1]]=self.BackwardStencilD
     
     def SetNeumannRight(self,M):
-        M.data[[-3,-2,-1]]=self.ForwardStencilD
+        M.sort_indices()
+        M.data[M.indptr[-2]:M.indptr[-1]]=self.ForwardStencilD
 
