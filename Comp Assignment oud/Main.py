@@ -178,23 +178,18 @@ while time<Time.nt:
     k = 1
 
     ## Guess ## #NOG EENS NA KIJKEN VOOR h0[1]
-    #h0 = np.ones(MaxIterLoad + 1)*StateVector[time-1].h0 #If index error, do MaxIterLoad+2
-    h0_k = np.zeros(MaxIterLoad + 1)
-    h0_k[0] = StateVector[time-1].h0
-    h0_k[1] = h0_k[0] * 1.01
+    h0 = np.ones(MaxIterLoad + 1)*StateVector[time-1].h0 #If index error, do MaxIterLoad+2
     Delta_Load = np.ones(MaxIterLoad+1)
     
-
-
     """Start Load Balance Loop"""
     ### TO DO ###
     while k<MaxIterLoad and eps_h0[k] > Tolh0: 
     
         """a. Calculate Film Thickness Profile"""
-        StateVector[time].h= h0_k[k] + ring_shape
+        StateVector[time].h= h0[k] + ring_shape
 
         """b. Calculate Asperity Load"""
-        StateVector[time].Lambda = h0_k[k]/Contact.Roughness
+        StateVector[time].Lambda = h0[k]/Contact.Roughness
         Contact.AsperityContact(StateVector,time)
         
         """c. Solve Reynolds""" 
@@ -204,9 +199,9 @@ while time<Time.nt:
         Delta_Load[k] = StateVector[time].HydrodynamicLoad + StateVector[time].AsperityLoad - Ops.CompressionRingLoad[time]
 
         if k>0:
-            h0_k[k +1] = max(h0_k[k] - UnderRelaxh0 * ((Delta_Load[k]) / (Delta_Load[k] - Delta_Load[k - 1])) * (h0_k[k] - h0_k[k - 1]), 0.1 * Contact.Roughness)
+            h0[k +1] = max(h0[k] - UnderRelaxh0 * ((Delta_Load[k]) / (Delta_Load[k] - Delta_Load[k - 1])) * (h0[k] - h0[k - 1]), 0.1 * Contact.Roughness)
         elif k==0:
-            h0_k[k +1] = h0_k[k] - UnderRelaxh0 *0.01*h0_k[k]
+            h0[k +1] = h0[k] - UnderRelaxh0 *0.01*h0[k]
         elif k==MaxIterLoad:
             break
 
@@ -215,8 +210,8 @@ while time<Time.nt:
 
         """e. Update & Calculate Residual"""      
         k += 1
-        eps_h0[k] = abs(h0_k[k] / h0_k[k-1] - 1.0) 
-        StateVector[time].h0 = h0_k[k]
+        eps_h0[k] = abs(h0[k] / h0[k-1] - 1.0) 
+        StateVector[time].h0 = h0[k]
         
         """Load Balance Output""" 
         print("Load Balance:: Residuals [h0] @Time:",round(Time.t[time]*1000,5),"ms & Iteration:",k,"-> [",np.round(eps_h0[k],2+int(np.abs(np.log10(Tolh0)))),"]\n")
@@ -225,9 +220,7 @@ while time<Time.nt:
            if SaveFig2File:
                figname="Figures/PT@Time_"+str(round(Time.t[time]*1000,5))+"ms_LoadIteration_"+str(k)+".png" 
                fig.savefig(figname, dpi=300)  
-           plt.close(fig)     
-
-        StateVector[time].h0 = h0_k[k]    
+           plt.close(fig)         
     
     
     """Visual Output per time step""" 
@@ -247,7 +240,7 @@ while time<Time.nt:
     ###########
     Viscosity=Mixture.DynamicViscosity(StateVector[time])
 
-    StateVector[time].Hersey=abs(Ops.SlidingVelocity[time]) * StateVector[time].Viscosity / StateVector[time].HydrodynamicLoad
+    StateVector[time].Hersey=abs(Ops.SlidingVelocity[time]) * Viscosity / StateVector[time].HydrodynamicLoad
     StateVector[time].COF=(StateVector[time].ViscousFriction + StateVector[time].AsperityFriction) / StateVector[time].HydrodynamicLoad
     Contact.Wear(Ops,Time,StateVector,time)
  

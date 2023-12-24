@@ -82,8 +82,8 @@ Discretization=FiniteDifferences(Grid)
 
 """Read Data"""
 time=0
-for time in range(1,Time.nt-1):
-    FileName='Comp_Assignment\Data\Time_'+str(round(Time.t[time]*1000,4))+'ms.h5' 
+for time in range(1,Time.nt):
+    FileName='Comp Assignment fixed\Data\Time_'+str(round(Time.t[time]*1000,4))+'ms.h5' 
 
     Data=IO.ReadData(FileName)
     StateVector[time].h0=float(Data['State']['h0'])
@@ -132,12 +132,9 @@ for t in range(Time.nt-1):
 plt.plot(Ops.CranckAngle[1:], Lambdas, 'b-')
 plt.xlabel('Crank angle ($\psi$) [rad]')
 plt.ylabel('Dimensionless film thickness ($\Lambda$) [-]')
-#plt.hlines([1, 2.5],-2,15,'k','--', linewidth=.6)
 plt.xlim([-.5, 15])
-#plt.vlines(Ops.CranckAngle[time],0,40,'k','--', linewidth=.6)
 plt.ylim([0,40])
-#plt.savefig('Comp Assignment\PostProcessing\Dimensionless_Film_thickness.png',dpi=300)
-plt.show()
+#plt.show()
 plt.close()
 
 #ii The Stribeck curve, displaying the coefficient of friction versus the Hersey number
@@ -152,17 +149,16 @@ for t in range(Time.nt-1):
 plt.plot(Herseys, COFs, 'b-')
 plt.xlabel('Hersey number [-]')
 plt.ylabel('Coefficient of Friction [-]')
-#plt.savefig('PostProcessing/Stribeck_curve.png',dpi=300)
-plt.show()
+#plt.show()
 plt.close()
 
 #iii Characteristic Pressure & Temperature fields at interesting and relevant locations
 
-interesting_points = np.array([1, np.argmax(Ops.SlidingVelocity), 500, 999-np.argmax(Ops.CompressionRingLoad[::-1]), 998])
+interesting_points = np.array([1, np.argmax(Ops.SlidingVelocity),np.argmin(Ops.SlidingVelocity), 500,  999-np.argmax(Ops.CompressionRingLoad[::-1]),718, 999])
 vis.Report_Ops(Time, Ops, interesting_points)
-#plt.savefig('PostProcessing/Interesting_points.png', dpi=300)
 plt.show()
 plt.close()
+
 
 def Report_PT1(Grid,State): # initiatlization
 
@@ -170,15 +166,15 @@ def Report_PT1(Grid,State): # initiatlization
     color = 'tab:blue'
     ax1.set_xlabel('$x [m]$ at location %s (%.2f ms)' %(np.where(interesting_points == time)[0][0]+1, time/1000*50))
     ax1.set_ylabel('$P [MPa]$',color=color)
-    ax1.plot(Grid.x,State.Pressure/1e6,'x-', linewidth=1,color=color)
+    ax1.plot(Grid.x[1:-2],State.Pressure[1:-2]/1e6,'x-', linewidth=1,color=color)
     ax1.tick_params(axis='y')
     ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
     color = 'tab:red'
     ax2.set_ylabel('$T [^\circ C]$',color=color)  # we already handled the x-label with ax1
-    ax2.plot(Grid.x,State.Temperature-273.15,'x-', linewidth=1,color=color)
+    ax2.plot(Grid.x[1:-2],State.Temperature[1:-2]-273.15,'x-', linewidth=1,color=color)
     ax2.tick_params(axis='y')
     f1.tight_layout() # otherwise the right y-label is slightly clipped
-    plt.show()
+    #plt.show()
     return f1
 
 
@@ -188,8 +184,6 @@ def Report_PT1(Grid,State): # initiatlization
 
 for time in interesting_points:
     fig=Report_PT1(Grid,StateVector[time])
-    #figname="PostProcessing/PT@Time_"+str(round(Time.t[time]*1000,5))+"ms.png" 
-    #fig.savefig(figname, dpi=300)
     plt.close(fig)
 
 #iv Vapour Volume Fraction, Viscosity, Density,... at relevant locations
@@ -199,9 +193,7 @@ for time in interesting_points:
     plt.ylabel( 'Vapour Volume Fraction '+str(chr(945)) + ' [-]')
     plt.xlabel('x [mm] at ' +str(time) )
     plt.title('Location %s (%.2f ms)' %(np.where(interesting_points == time)[0][0]+1, time/1000*50))
-    # figname="PostProcessing/alpha@Time_"+"{0:.2f}".format(round(Time.t[time]*1000,5))+"ms.png" 
-    #plt.savefig(figname,dpi=300)
-    plt.show()
+    #plt.show()
     plt.close()
 
 
@@ -210,36 +202,28 @@ for time in interesting_points:
     plt.ylabel( 'Density '+str(chr(961)) + '  [kg/m³]')
     plt.xlabel('x [mm] at ' +str(time) )
     plt.title('Location %s (%.2f ms)' %(np.where(interesting_points == time)[0][0]+1, time/1000*50))
-    # figname="PostProcessing/rho@Time_"+"{0:.2f}".format(round(Time.t[time]*1000,5))+"ms.png" 
-    #plt.savefig(figname,dpi=300)
-    plt.show()
+    #plt.show()
     plt.close()
     
     plt.plot(Grid.x*1000, StateVector[time].Viscosity)
     plt.ylabel( 'Viscosity '+str(chr(956)) + '  Pa s')
     plt.xlabel('x [mm] at ' +str(time) )
     plt.title('Location %s (%.2f ms)' %(np.where(interesting_points == time)[0][0]+1, time/1000*50))
-    # figname="PostProcessing/mu@Time_"+"{0:.2f}".format(round(Time.t[time]*1000,5))+"ms.png" 
-    #plt.savefig(figname,dpi=300)
-    plt.show()
+    #plt.show()
     plt.close()
 
     plt.plot(Grid.x*1000, StateVector[time].SpecHeat)
     plt.ylabel( 'Specific Heat Capacity (c) [J/(K*kg)]')
     plt.xlabel('x [mm] at ' +str(time) )
     plt.title('Location %s (%.2f ms)' %(np.where(interesting_points == time)[0][0]+1, time/1000*50))
-    # figname="PostProcessing/SpecHeat@Time_"+"{0:.2f}".format(round(Time.t[time]*1000,5))+"ms.png" 
-    #plt.savefig(figname,dpi=300)
-    plt.show()
+    #plt.show()
     plt.close()    
 
     plt.plot(Grid.x*1000, StateVector[time].Conduc)
     plt.ylabel( 'Thermal Conductivity '+str(chr(954)) + ' [W/(m*K)]')
     plt.xlabel('x [mm] at ' +str(time) )
     plt.title('Location %s (%.2f ms)' %(np.where(interesting_points == time)[0][0]+1, time/1000*50))
-    # figname="PostProcessing/SpecHeat@Time_"+"{0:.2f}".format(round(Time.t[time]*1000,5))+"ms.png" 
-    #plt.savefig(figname,dpi=300)
-    plt.show()
+    #plt.show()
     plt.close()       
 
 #v Velocity Field
@@ -289,20 +273,18 @@ for time in interesting_points:
     for i in range(len(x_grid)):
         pts.append([x_grid[i]*1000,StateVector[time].h[i]*1000])
     pts.append([0.75,0.02])
-    p = Polygon(pts,closed=False,ec='darkblue',fc='blue',zorder=.1)
-    plt.gca().add_patch(p)
+    #p = Polygon(pts,closed=False,ec='darkblue',fc='blue',zorder=.1)
+    #plt.gca().add_patch(p)
 
     plt.quiver(X*1000,Z*1000,u_x[skip2]*scale,u_z[skip2],pivot='tail',minlength=0,scale=350) #scale=350 for v!=0
 
     plt.plot(x_grid*1000, StateVector[time].h*1000)
-    # figname="PostProcessing/Vectorplot@Time_"+"{0:.2f}".format(round(Time.t[time]*1000,5))+"ms.png" 
     plt.title('Location %s (%.2f ms)' %(np.where(interesting_points == time)[0][0]+1, time/1000*50))
     plt.xlabel('x [mm]')
     plt.ylabel('z [mm]')
     plt.xlim([-.8,.8])
     plt.ylim([0.0, 0.0175])
     plt.tight_layout()
-    #plt.savefig(figname,dpi=300)
     plt.show()
     plt.close()
     j += 1
@@ -317,13 +299,12 @@ for time in range(Time.nt - 1):
 
 plt.plot(Ops.CranckAngle[1:], WearDepthRing_values, '-',markersize=3)
 plt.xlabel('Crank angle [rad]')
-#plt.plot(Time.t[1:], WearDepthRing_values, 'bo')
-#plt.xlabel('time [s]')
+
 plt.ylabel('Weardepth ring [mm]')
 pi = np.pi
 psi = np.arange(0, 4 * pi + pi/2, step=(pi/2))
 plt.xticks(psi,['0','π/2', 'π', '3π/2', '2π','5π/2', '3π', '7π/2', '4π'])
-#plt.savefig('PostProcessing/WearDepth_ring.png',dpi=300)
+
 plt.show()
 plt.close()
 
@@ -333,7 +314,6 @@ time = 998 # We are only interested in wear after a full combustion cycle
 plt.plot(StateVector[time].WearLocationsCylinder*1000 - 95.5, StateVector[time].WearDepthCylinder, '-',markersize=3)
 plt.xlabel('Location on cylinder liner [mm]')
 plt.ylabel('Wear depth [m]')
-#plt.savefig('PostProcessing/Wear_cylinder.png',dpi=300)    
 plt.show()
 plt.close()
 
