@@ -41,8 +41,8 @@ import VisualLib as vis
 
 
 """General Settings for Input and Output """
-VisualFeedbackLevel=1 # [0,1,2,3] = [none, per time step, per load iteration, per # reynolds iterations]
-SaveFig2File=True # Save figures to file? True/False
+VisualFeedbackLevel=0 # [0,1,2,3] = [none, per time step, per load iteration, per # reynolds iterations]
+SaveFig2File=False # Save figures to file? True/False
 LoadInitialState=False # Load The IntialSate? True/False
 InitTime=0.0 #Initial Time to Load?
 SaveStates=True # Save States to File? True/False
@@ -163,7 +163,7 @@ else:
 
 ring_shape = 4 * Engine.CompressionRing.CrownHeight * (Grid.x**2) / (Engine.CompressionRing.Thickness**2)
 ring_shape_shifted = ring_shape -0.25*Engine.CompressionRing.CrownHeight
-worn_ring = np.max(ring_shape_shifted,0)
+worn_ring = np.maximum(ring_shape_shifted,0)
 
 
 """Start Time Loop"""
