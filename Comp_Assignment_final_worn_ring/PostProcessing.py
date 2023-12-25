@@ -75,6 +75,10 @@ StateVector=[]
 for t in range(Time.nt):
     StateVector.append(State(Grid))
 
+StateVector_og=[]
+for t in range(Time.nt):
+    StateVector_og.append(State(Grid))
+
 """ "Spatial "Discretization by Finite Differences """
 Discretization=FiniteDifferences(Grid)
 
@@ -82,7 +86,6 @@ Discretization=FiniteDifferences(Grid)
 
 """Read Data"""
 time=0
-Lambda_original_ring = []
 for time in range(1,Time.nt):
     FileName='Comp_Assignment_final_worn_ring\Data\Time_'+str(round(Time.t[time]*1000,4))+'ms.h5' 
 
@@ -112,13 +115,44 @@ for time in range(1,Time.nt):
     StateVector[time].WallShearStress=Data['State']['WallShearStress']
     StateVector[time].WearLocationsCylinder=Data['State']['WearLocationsCylinder']
     StateVector[time].WearDepthCylinder=Data['State']['WearDepthCylinder']
-    
-
-    FileName2='Comp_Assignment_final_worn_ring\Data_1\Time_'+str(round(Time.t[time]*1000,4))+'ms.h5' 
-    Data2=IO.ReadData(FileName2)
-    Lambda_original_ring.append(float(Data2['State']['Lambda']))
 
     time+=1
+
+
+time=0
+for time in range(1,Time.nt):
+    FileName2='Comp_Assignment_final_worn_ring\Data_1\Time_'+str(round(Time.t[time]*1000,4))+'ms.h5'  
+
+    Data2=IO.ReadData(FileName2)
+    StateVector_og[time].h0=float(Data2['State']['h0'])
+    StateVector_og[time].Lambda=float(Data2['State']['Lambda'])
+    StateVector_og[time].HydrodynamicLoad=float(Data2['State']['HydrodynamicLoad'])
+    StateVector_og[time].ViscousFriction=float(Data2['State']['ViscousFriction'])
+    StateVector_og[time].AsperityLoad=float(Data2['State']['AsperityLoad'])
+    StateVector_og[time].AsperityFriction=float(Data2['State']['AsperityFriction'])
+    StateVector_og[time].AsperityContactArea=float(Data2['State']['AsperityContactArea'])
+    StateVector_og[time].AsperityContactPressure=float(Data2['State']['AsperityContactPressure'])
+    StateVector_og[time].HertzianContactPressure=float(Data2['State']['HertzianContactPressure'])
+    StateVector_og[time].COF=float(Data2['State']['COF'])
+    StateVector_og[time].WearDepthRing=float(Data2['State']['WearDepthRing'])
+    StateVector_og[time].Viscosity=Data2['State']['Viscosity']
+    StateVector_og[time].VapourVolumeFraction=Data2['State']['VapourVolumeFraction']
+    StateVector_og[time].Density=Data2['State']['Density']
+    StateVector_og[time].SpecHeat = Data2['State']['SpecHeat']
+    StateVector_og[time].Conduc = Data2['State']['Conduc']
+
+    StateVector_og[time].Hersey = abs(Ops.SlidingVelocity[time]) * StateVector_og[time].Viscosity / ( StateVector_og[time].HydrodynamicLoad + StateVector_og[time].AsperityLoad)
+
+    StateVector_og[time].h= Data2['State']['h']
+    StateVector_og[time].Pressure=Data2['State']['Pressure']
+    StateVector_og[time].Temperature=Data2['State']['Temperature']
+    StateVector_og[time].WallShearStress=Data2['State']['WallShearStress']
+    StateVector_og[time].WearLocationsCylinder=Data2['State']['WearLocationsCylinder']
+    StateVector_og[time].WearDepthCylinder=Data2['State']['WearDepthCylinder']
+
+    time+=1
+        
+    
     
  
     
@@ -131,12 +165,14 @@ for time in range(1,Time.nt):
 #i Dimensionless film thickness (Lambda) evolution a.f.o. crank angle (psi) 
 
 Lambdas = np.zeros(Time.nt-1)
+Lambdas_og = np.zeros(Time.nt-1)
 
 for t in range(Time.nt-1):
     Lambdas[t] = StateVector[t].Lambda
+    Lambdas_og[t] = StateVector_og[t].Lambda
 
 plt.plot(Ops.CranckAngle[1:], Lambdas, 'b-')
-plt.plot(Ops.CranckAngle[1:], Lambda_original_ring, 'r-')
+plt.plot(Ops.CranckAngle[1:], Lambdas_og, 'r-')
 plt.xlabel('Crank angle ($\psi$) [rad]')
 plt.ylabel('Dimensionless film thickness ($\Lambda$) [-]')
 plt.xlim([-.5, 15])
@@ -148,15 +184,20 @@ plt.close()
 
 COFs = np.zeros(Time.nt-1)
 Herseys = np.zeros(Time.nt-1)
+COFs_og = np.zeros(Time.nt-1)
+Herseys_og = np.zeros(Time.nt-1)
 
 for t in range(Time.nt-1):
     Herseys[t] = abs(np.mean(StateVector[t].Hersey))  
     COFs[t] = abs(StateVector[t].COF)
+    Herseys_og[t] = abs(np.mean(StateVector_og[t].Hersey))  
+    COFs_og[t] = abs(StateVector_og[t].COF)
 
 plt.plot(Herseys, COFs, 'b-')
+plt.plot(Herseys_og, COFs_og, 'r-')
 plt.xlabel('Hersey number [-]')
 plt.ylabel('Coefficient of Friction [-]')
-#plt.show()
+plt.show()
 plt.close()
 
 #iii Characteristic Pressure & Temperature fields at interesting and relevant locations
