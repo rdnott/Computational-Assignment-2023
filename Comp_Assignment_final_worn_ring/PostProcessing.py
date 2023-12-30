@@ -164,6 +164,10 @@ for time in range(1,Time.nt):
 
 #i Dimensionless film thickness (Lambda) evolution a.f.o. crank angle (psi) 
 
+interesting_points = np.array([1, np.argmax(Ops.SlidingVelocity),np.argmin(Ops.SlidingVelocity), 500,  999-np.argmax(Ops.CompressionRingLoad[::-1]),718, 999])
+vline = (interesting_points/1000*4*np.pi).tolist()
+
+
 Lambdas = np.zeros(Time.nt-1)
 Lambdas_og = np.zeros(Time.nt-1)
 
@@ -171,13 +175,29 @@ for t in range(Time.nt-1):
     Lambdas[t] = StateVector[t].Lambda
     Lambdas_og[t] = StateVector_og[t].Lambda
 
-plt.plot(Ops.CranckAngle[1:], Lambdas, 'b-')
-plt.plot(Ops.CranckAngle[1:], Lambdas_og, 'r-')
+plt.plot(Ops.CranckAngle[1:], Lambdas, 'r-', label='Worn')
+plt.plot(Ops.CranckAngle[1:], Lambdas_og, 'b-', label='Original')
 plt.xlabel('Crank angle ($\psi$) [rad]')
 plt.ylabel('Dimensionless film thickness ($\Lambda$) [-]')
-plt.xlim([-.5, 15])
+plt.xlim([-.5, 13.066])
 plt.ylim([0,40])
-plt.show()
+
+psi = np.arange(0, 4 * np.pi + np.pi/2, step=(np.pi/2))
+plt.xticks(psi,['0','π/2', 'π', '3π/2', '2π','5π/2', '3π', '7π/2', '4π'])
+
+plt.hlines(y=1, xmin=-0.5,xmax=13.066, color='k',linestyles='--')
+plt.hlines(y=2.5, xmin=-0.5,xmax=13.066, color='k',linestyles='--')
+
+
+
+
+for i,x in enumerate(vline):
+    plt.vlines(x,ymin=min(Lambdas_og[interesting_points-1][i],Lambdas[interesting_points-1][i])-2,ymax=max(Lambdas_og[interesting_points-1][i],Lambdas[interesting_points-1][i])+2,colors='k',linestyles='--')
+    label = f' {i+1}'
+    plt.text(x+0.3, max(Lambdas_og[interesting_points-1][i],Lambdas[interesting_points-1][i])+2.3,label, color='k', fontsize=12, ha='right', va='bottom')
+
+plt.legend()
+#plt.show()
 plt.close()
 
 #ii The Stribeck curve, displaying the coefficient of friction versus the Hersey number
@@ -193,10 +213,11 @@ for t in range(Time.nt-1):
     Herseys_og[t] = abs(np.mean(StateVector_og[t].Hersey))  
     COFs_og[t] = abs(StateVector_og[t].COF)
 
-plt.plot(Herseys, COFs, 'b-')
-plt.plot(Herseys_og, COFs_og, 'r-')
+plt.plot(Herseys, COFs, 'r-', label='Worn')
+plt.plot(Herseys_og, COFs_og, 'b-', label='Original')
 plt.xlabel('Hersey number [-]')
 plt.ylabel('Coefficient of Friction [-]')
+plt.legend()
 plt.show()
 plt.close()
 
@@ -204,7 +225,7 @@ plt.close()
 
 interesting_points = np.array([1, np.argmax(Ops.SlidingVelocity),np.argmin(Ops.SlidingVelocity), 500,  999-np.argmax(Ops.CompressionRingLoad[::-1]),718, 999])
 vis.Report_Ops(Time, Ops, interesting_points)
-plt.show()
+#plt.show()
 plt.close()
 
 
@@ -212,14 +233,14 @@ def Report_PT1(Grid,State): # initiatlization
 
     f1, ax1 = plt.subplots()
     color = 'tab:blue'
-    ax1.set_xlabel('$x [m]$ at location %s (%.2f ms)' %(np.where(interesting_points == time)[0][0]+1, time/1000*50))
+    ax1.set_xlabel('$x [mm]$ at location %s (%.2f ms)' %(np.where(interesting_points == time)[0][0]+1, time/1000*50))
     ax1.set_ylabel('$P [MPa]$',color=color)
-    ax1.plot(Grid.x[1:-2],State.Pressure[1:-2]/1e6,'x-', linewidth=1,color=color)
+    ax1.plot(Grid.x[1:-2]*1000,State.Pressure[1:-2]/1e6,'x-', linewidth=1,color=color)
     ax1.tick_params(axis='y')
     ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
     color = 'tab:red'
     ax2.set_ylabel('$T [^\circ C]$',color=color)  # we already handled the x-label with ax1
-    ax2.plot(Grid.x[1:-2],State.Temperature[1:-2]-273.15,'x-', linewidth=1,color=color)
+    ax2.plot(Grid.x[1:-2]*1000,State.Temperature[1:-2]-273.15,'x-', linewidth=1,color=color)
     ax2.tick_params(axis='y')
     f1.tight_layout() # otherwise the right y-label is slightly clipped
     #plt.show()
@@ -239,41 +260,40 @@ for time in interesting_points:
 
     plt.plot(Grid.x*1000, StateVector[time].VapourVolumeFraction)
     plt.ylabel( 'Vapour Volume Fraction '+str(chr(945)) + ' [-]')
-    plt.xlabel('x [mm] at ' +str(time) )
+    plt.xlabel('x [mm]')
     plt.title('Location %s (%.2f ms)' %(np.where(interesting_points == time)[0][0]+1, time/1000*50))
-    #plt.show()
+    plt.show()
     plt.close()
 
 
 
     plt.plot(Grid.x*1000, StateVector[time].Density)
     plt.ylabel( 'Density '+str(chr(961)) + '  [kg/m³]')
-    plt.xlabel('x [mm] at ' +str(time) )
+    plt.xlabel('x [mm]' )
     plt.title('Location %s (%.2f ms)' %(np.where(interesting_points == time)[0][0]+1, time/1000*50))
-    #plt.show()
+    plt.show()
     plt.close()
     
     plt.plot(Grid.x*1000, StateVector[time].Viscosity)
     plt.ylabel( 'Viscosity '+str(chr(956)) + '  Pa s')
-    plt.xlabel('x [mm] at ' +str(time) )
+    plt.xlabel('x [mm]')
     plt.title('Location %s (%.2f ms)' %(np.where(interesting_points == time)[0][0]+1, time/1000*50))
-    #plt.show()
+    plt.show()
     plt.close()
 
     plt.plot(Grid.x*1000, StateVector[time].SpecHeat)
-    plt.ylabel( 'Specific Heat Capacity (c) [J/(K*kg)]')
-    plt.xlabel('x [mm] at ' +str(time) )
+    plt.ylabel( 'Specific Heat Capacity c [J/(K*kg)]')
+    plt.xlabel('x [mm]')
     plt.title('Location %s (%.2f ms)' %(np.where(interesting_points == time)[0][0]+1, time/1000*50))
     #plt.show()
     plt.close()    
 
     plt.plot(Grid.x*1000, StateVector[time].Conduc)
     plt.ylabel( 'Thermal Conductivity '+str(chr(954)) + ' [W/(m*K)]')
-    plt.xlabel('x [mm] at ' +str(time) )
+    plt.xlabel('x [mm]')
     plt.title('Location %s (%.2f ms)' %(np.where(interesting_points == time)[0][0]+1, time/1000*50))
     #plt.show()
-    plt.close()       
-
+    plt.close()
 #v Velocity Field
 
     j = 1
@@ -333,7 +353,7 @@ for time in interesting_points:
     plt.xlim([-.8,.8])
     plt.ylim([0.0, 0.0175])
     plt.tight_layout()
-    #plt.show()
+    plt.show()
     plt.close()
     j += 1
 
@@ -352,8 +372,7 @@ plt.ylabel('Weardepth ring [mm]')
 pi = np.pi
 psi = np.arange(0, 4 * pi + pi/2, step=(pi/2))
 plt.xticks(psi,['0','π/2', 'π', '3π/2', '2π','5π/2', '3π', '7π/2', '4π'])
-
-#plt.show()
+plt.show()
 plt.close()
 
 
@@ -362,7 +381,7 @@ time = 998 # We are only interested in wear after a full combustion cycle
 plt.plot(StateVector[time].WearLocationsCylinder*1000 - 95.5, StateVector[time].WearDepthCylinder, '-',markersize=3)
 plt.xlabel('Location on cylinder liner [mm]')
 plt.ylabel('Wear depth [m]')
-#plt.show()
+plt.show()
 plt.close()
 
 print('Maximim wear depth on cylinder sleeve = ' + str(max(StateVector[time].WearDepthCylinder)))
