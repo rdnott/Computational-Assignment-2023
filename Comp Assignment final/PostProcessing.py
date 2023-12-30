@@ -161,7 +161,7 @@ for i,line in enumerate(vline):
 for i, (x, y) in enumerate(zip(dot_x, dot_y)):
     label = f' {i+1}'
     plt.text(x + label_offset, y + label_offset, label, color='black', fontsize=12, ha='right', va='bottom')
-    print(y)
+    
 
 
 plt.legend()
