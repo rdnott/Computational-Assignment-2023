@@ -34,18 +34,22 @@ def Report_PT(Grid,State): # initiatlization
 
 
 def Report_Ops(Time,Ops,time):     
-    
     f2, ax1 = plt.subplots()
     color = 'tab:blue'
     ax1.set_xlabel('$t [s]$')
     ax1.set_ylabel('$U [m/s]$',color=color)
     ax1.plot(Time.t,Ops.SlidingVelocity,'-',Time.t[time],Ops.SlidingVelocity[time],'o', linewidth=1,color=color)
     ax1.tick_params(axis='y')
+    for i,line in enumerate(Time.t[time]):
+        ax1.vlines(Time.t[time],-20,20,'k','--',linewidth=0.6, label=i)
+        x = Time.t[time][i]
+        ax1.text(x,14.8,str(i+1),color='k',fontsize=11,ha='left', va='top')
     ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
     color = 'tab:red'
     ax2.set_ylabel('$F [N/m]$',color=color)  # we already handled the x-label with ax1
     ax2.plot(Time.t,Ops.CompressionRingLoad,'-',Time.t[time],Ops.CompressionRingLoad[time],'o',linewidth=1,color=color)
     ax2.tick_params(axis='y')
     f2.tight_layout()  # otherwise the right y-label is slightly clipped
+    ax1.set_ylim([-15,15])
     plt.show()
     return f2
