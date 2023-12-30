@@ -29,7 +29,7 @@ class Solids:
         self.Name ='Grey Cast Iron'
         self.YoungsModulus=120.0e9  # Pa
         self.PoissonModulus=0.28 
-        self.Hardness=250.0e6   # Pa
+        self.Hardness=350.0e6   # Pa !!!!!! origineel 250e6 nr 350 gedaan
 
         
     def Steel(self):

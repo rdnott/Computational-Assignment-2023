@@ -134,7 +134,7 @@ plt.xlabel('Crank angle ($\psi$) [rad]')
 plt.ylabel('Dimensionless film thickness ($\Lambda$) [-]')
 plt.xlim([-.5, 15])
 plt.ylim([0,40])
-#plt.show()
+plt.show()
 plt.close()
 
 #ii The Stribeck curve, displaying the coefficient of friction versus the Hersey number
@@ -149,7 +149,7 @@ for t in range(Time.nt-1):
 plt.plot(Herseys, COFs, 'b-')
 plt.xlabel('Hersey number [-]')
 plt.ylabel('Coefficient of Friction [-]')
-#plt.show()
+plt.show()
 plt.close()
 
 #iii Characteristic Pressure & Temperature fields at interesting and relevant locations
@@ -174,7 +174,7 @@ def Report_PT1(Grid,State): # initiatlization
     ax2.plot(Grid.x[1:-2],State.Temperature[1:-2]-273.15,'x-', linewidth=1,color=color)
     ax2.tick_params(axis='y')
     f1.tight_layout() # otherwise the right y-label is slightly clipped
-    #plt.show()
+    plt.show()
     return f1
 
 
@@ -193,7 +193,7 @@ for time in interesting_points:
     plt.ylabel( 'Vapour Volume Fraction '+str(chr(945)) + ' [-]')
     plt.xlabel('x [mm] at ' +str(time) )
     plt.title('Location %s (%.2f ms)' %(np.where(interesting_points == time)[0][0]+1, time/1000*50))
-    #plt.show()
+    plt.show()
     plt.close()
 
 
@@ -202,28 +202,28 @@ for time in interesting_points:
     plt.ylabel( 'Density '+str(chr(961)) + '  [kg/m³]')
     plt.xlabel('x [mm] at ' +str(time) )
     plt.title('Location %s (%.2f ms)' %(np.where(interesting_points == time)[0][0]+1, time/1000*50))
-    #plt.show()
+    plt.show()
     plt.close()
     
     plt.plot(Grid.x*1000, StateVector[time].Viscosity)
     plt.ylabel( 'Viscosity '+str(chr(956)) + '  Pa s')
     plt.xlabel('x [mm] at ' +str(time) )
     plt.title('Location %s (%.2f ms)' %(np.where(interesting_points == time)[0][0]+1, time/1000*50))
-    #plt.show()
+    plt.show()
     plt.close()
 
     plt.plot(Grid.x*1000, StateVector[time].SpecHeat)
     plt.ylabel( 'Specific Heat Capacity (c) [J/(K*kg)]')
     plt.xlabel('x [mm] at ' +str(time) )
     plt.title('Location %s (%.2f ms)' %(np.where(interesting_points == time)[0][0]+1, time/1000*50))
-    #plt.show()
+    plt.show()
     plt.close()    
 
     plt.plot(Grid.x*1000, StateVector[time].Conduc)
     plt.ylabel( 'Thermal Conductivity '+str(chr(954)) + ' [W/(m*K)]')
     plt.xlabel('x [mm] at ' +str(time) )
     plt.title('Location %s (%.2f ms)' %(np.where(interesting_points == time)[0][0]+1, time/1000*50))
-    #plt.show()
+    plt.show()
     plt.close()       
 
 #v Velocity Field
