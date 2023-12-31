@@ -83,7 +83,7 @@ Discretization=FiniteDifferences(Grid)
 """Read Data"""
 time=0
 for time in range(1,Time.nt):
-    FileName='Comp Assignment fixed\Data\Time_'+str(round(Time.t[time]*1000,4))+'ms.h5' 
+    FileName='ROEL3012_finished\Data\Time_'+str(round(Time.t[time]*1000,4))+'ms.h5' 
 
     Data=IO.ReadData(FileName)
     StateVector[time].h0=float(Data['State']['h0'])
@@ -133,8 +133,8 @@ plt.plot(Ops.CranckAngle[1:], Lambdas, 'b-')
 plt.xlabel('Crank angle ($\psi$) [rad]')
 plt.ylabel('Dimensionless film thickness ($\Lambda$) [-]')
 plt.xlim([-.5, 15])
-plt.ylim([0,40])
-#plt.show()
+plt.ylim([0,750])
+plt.show()
 plt.close()
 
 #ii The Stribeck curve, displaying the coefficient of friction versus the Hersey number
