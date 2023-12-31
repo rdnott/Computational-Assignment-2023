@@ -16,10 +16,6 @@ class FiniteDifferences:
         self.BackwardStencilD= np.array([0.0,-1.0,1.0])/(Grid.dx)
         
         
-        # second order (DD)              i-2  i-1  i  i+1  i+2
-        #self.ForwardStencilDD = np.array([0.0,0.0,1.0,-2.0,1.0])/(Grid.dx**2)
-        #self.CentralStencilDD = np.array([0.0,1.0,-2.0,1.0,0.0])/(Grid.dx**2)
-        #self.BackwardStencilDD= np.array([1.0,-2.0,1.0,0.0,0.0])/(Grid.dx**2)
         self.CentralStencilDD = np.array([1.0,-2.0,1.0])/(Grid.dx**2)
 
         
