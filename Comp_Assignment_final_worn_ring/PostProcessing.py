@@ -341,8 +341,6 @@ for time in interesting_points:
     for i in range(len(x_grid)):
         pts.append([x_grid[i]*1000,StateVector[time].h[i]*1000])
     pts.append([0.75,0.02])
-    #p = Polygon(pts,closed=False,ec='darkblue',fc='blue',zorder=.1)
-    #plt.gca().add_patch(p)
 
     plt.quiver(X*1000,Z*1000,u_x[skip2]*scale,u_z[skip2],pivot='tail',minlength=0,scale=350) #scale=350 for v!=0
 

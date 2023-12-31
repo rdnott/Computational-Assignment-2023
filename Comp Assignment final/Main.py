@@ -177,8 +177,7 @@ while time<Time.nt:
     eps_h0 = np.ones(MaxIterLoad+1)
     k = 1
 
-    ## Guess ## #NOG EENS NA KIJKEN VOOR h0[1]
-    #h0 = np.ones(MaxIterLoad + 1)*StateVector[time-1].h0 #If index error, do MaxIterLoad+2
+    ## Guess ##
     h0_k = np.zeros(MaxIterLoad + 2)
     h0_k[0] = StateVector[time-1].h0
     h0_k[1] = h0_k[0] * 1.01
