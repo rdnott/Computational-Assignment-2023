@@ -31,8 +31,8 @@ from FiniteDifferences import FiniteDifferences
 from IOHDF5 import IOHDF5
 import VisualLib as vis
 
-# from IPython import get_ipython
-# get_ipython().magic('reset -sf')
+from IPython import get_ipython
+
 
 
 """I/O Operator"""
@@ -134,7 +134,7 @@ plt.xlabel('Crank angle ($\psi$) [rad]')
 plt.ylabel('Dimensionless film thickness ($\Lambda$) [-]')
 plt.xlim([-.5, 15])
 plt.ylim([0,40])
-#plt.show()
+plt.show()
 plt.close()
 
 #ii The Stribeck curve, displaying the coefficient of friction versus the Hersey number
@@ -193,7 +193,7 @@ for time in interesting_points:
     plt.ylabel( 'Vapour Volume Fraction '+str(chr(945)) + ' [-]')
     plt.xlabel('x [mm] at ' +str(time) )
     plt.title('Location %s (%.2f ms)' %(np.where(interesting_points == time)[0][0]+1, time/1000*50))
-    #plt.show()
+    plt.show()
     plt.close()
 
 
